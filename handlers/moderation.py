@@ -45,8 +45,3 @@ async def moderate_incoming_message(message: Message):
             await message.delete()
         except Exception:
             await message.answer("❗ Не удалось забанить пользователя.")
-    elif punishment == "предупреждение":
-        await message.answer(
-            f"⚠️ Предупреждение @{username}\nПричина: {reason}",
-            reply_to_message_id=message.message_id
-        )
