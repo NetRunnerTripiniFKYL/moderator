@@ -4,14 +4,18 @@ from gpt import moderate_message
 from services.logger import log_action
 
 router = Router()
-
-@router.message(F.text)
+@router.message(F.text | F.caption)
 async def moderate_incoming_message(message: Message):
     # Не модерируем свои сообщения
     if message.from_user.is_bot:
         return
 
-    result = moderate_message(message.text)
+    # Берём либо text, либо caption
+    text = message.text or message.caption
+    if not text:
+        return  # например, стикер или просто фото без подписи
+
+    result = moderate_message(text)
     punishment = result.get("наказание", "никакое")
     reason = result.get("описание", "никакое")
 
@@ -24,12 +28,12 @@ async def moderate_incoming_message(message: Message):
         username=username,
         action=punishment,
         reason=reason,
-        message=message.text
+        message=text
     )
 
     # реагируем
     if punishment == "никакое":
-        return  # всё ок
+        return
 
     if punishment == "бан":
         try:
