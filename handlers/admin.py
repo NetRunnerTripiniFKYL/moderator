@@ -24,18 +24,24 @@ async def cmd_log(message: Message):
     if not os.path.exists(LOG_PATH):
         return await message.answer("Логов пока нет.")
 
-    with open(LOG_PATH, "r", encoding="utf-8") as f:
-        try:
+    try:
+        with open(LOG_PATH, "r", encoding="utf-8") as f:
             logs = json.load(f)
-        except json.JSONDecodeError:
-            return await message.answer("⚠️ Логи повреждены.")
+    except json.JSONDecodeError:
+        return await message.answer("⚠️ Логи повреждены.")
 
     last_logs = logs[-5:] if len(logs) >= 5 else logs
+
     text = "\n\n".join(
-        f"{log['user_id']} — {log['action']}:\n{log['message']}"
+        f"🕒 {log.get('timestamp')}\n"
+        f"👤 {log.get('username')} (ID: {log.get('user_id')})\n"
+        f"🚨 Действие: {log.get('action')}\n"
+        f"📌 Причина: {log.get('reason')}\n"
+        f"💬 Сообщение:\n{log.get('message')}"
         for log in last_logs
     )
-    await message.answer(f"📝 Последние записи:\n\n{text}")
+
+    await message.answer(f"📝 Последние записи логов:\n\n{text}")
 
 
 @router.message(Command("logall"))
